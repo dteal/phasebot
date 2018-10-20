@@ -19,12 +19,17 @@ RedBotMotors motors; // Instantiate the motor control object. This only needs
 
 void setup()
 {
-  motors.drive(255);   // Turn on Left and right motors at full speed forward.
+  motors.rightMotor(255);   // Turn on Left and right motors at full speed forward.
   delay(2000);         // Waits for 2 seconds
-  motors.stop();       // Stops both motors
+  motors.brake();       // Stops both motors
+  motors.leftMotor(255);
+  delay(2000);
+  motors.brake();
 }
 
 void loop()
 {
   // Nothing here. We'll get to this in the next experiment.
 }
+
+
