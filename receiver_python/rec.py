@@ -15,18 +15,9 @@ import queue
 # scipy.signal docs: https://docs.scipy.org/doc/scipy/reference/signal.html
 
 # design for 8 kHz
-fs = 40000 # sampling rate (Hz)
-freq = 440 # frequency of interest (Hz)
-duration = .05 # block time (s)
-
-
-def design_bandpass(low, high, fs, order):
-    nyq = fs * 0.5
-    return sp.butter(order, [low/nyq, high/nyq], btype='bandpass')
-def apply_bandpass(signal):
-    b, a = design_bandpass(390, 410, fs, order=3)
-    print(b,a)
-    return scipy.signal.lfilter(b, a, signal, axis=0)
+fs = 48000 # sampling rate (Hz)
+freq = 17950 # frequency of interest (Hz)
+duration = .001 # block time (s)
 
 class Recorder:
     def __init__(self):
@@ -39,9 +30,10 @@ class Recorder:
         amplitudes = np.abs(np.real(sf.fft(signal, axis=0)[0:n//2]))
         phases = np.imag(sf.fft(signal, axis=0)[0:n//2])
         freqs = np.linspace(0, fs/2, n//2)
-        index = int(440*n/fs)
+        index = int(17950*n/fs)-1
         self.phase = np.roll(self.phase, 1)
         self.phase[0] = phases[index, 0] - phases[index, 1]
+        print(amplitudes[index,0])
 
 pygame.init()
 screen = pygame.display.set_mode((500,500))
