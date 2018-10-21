@@ -8,14 +8,17 @@ import scipy.signal as sp
 import scipy.fftpack as sf
 import numpy as np
 import matplotlib.pyplot as plt
+import pygame
+import queue
 
 # sounddevice docs: https://python-sounddevice.readthedocs.io/en/0.3.12/usage.html#recording
 # scipy.signal docs: https://docs.scipy.org/doc/scipy/reference/signal.html
 
 # design for 8 kHz
 fs = 40000 # sampling rate (Hz)
-freq = 400 # frequency of interest (Hz)
-duration = .1 # block time (s)
+freq = 440 # frequency of interest (Hz)
+duration = .05 # block time (s)
+
 
 def design_bandpass(low, high, fs, order):
     nyq = fs * 0.5
@@ -27,7 +30,7 @@ def apply_bandpass(signal):
 
 class Recorder:
     def __init__(self):
-        self.count = 0
+        self.phase = np.zeros((10,))
 
     def callback(self, data, frames, time, status):
         n = data.shape[0]
@@ -36,12 +39,25 @@ class Recorder:
         amplitudes = np.abs(np.real(sf.fft(signal, axis=0)[0:n//2]))
         phases = np.imag(sf.fft(signal, axis=0)[0:n//2])
         freqs = np.linspace(0, fs/2, n//2)
-        index = int(400*n/fs)
-        print(phases[index, 0] - phases[index, 1])
+        index = int(440*n/fs)
+        self.phase = np.roll(self.phase, 1)
+        self.phase[0] = phases[index, 0] - phases[index, 1]
 
+pygame.init()
+screen = pygame.display.set_mode((500,500))
 r = Recorder()
 stream = sd.InputStream(channels=2, samplerate=fs, callback=r.callback, blocksize=int(duration*fs))
 with stream:
-    while True:
-        pass
-
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
+        phase = np.average(r.phase)
+        if phase < -20:
+            phase = -20
+        if phase > 20:
+            phase = 20
+        screen.fill((0,0,0))
+        pygame.draw.rect(screen, ((phase+20)*255/40, 0, 255 - (phase+20)*255/40), pygame.Rect(int((phase+20)*10), 0, 100, 500))
+        pygame.display.flip()
