@@ -16,8 +16,8 @@ import queue
 
 # design for 8 kHz
 fs = 40000 # sampling rate (Hz)
+freq = 440 # frequency of interest (Hz)
 duration = .05 # block time (s)
-freqs = [880, 500, 600, 700] # frequencies of interest (Hz)
 
 def design_bandpass(low, high, fs, order):
     nyq = fs * 0.5
@@ -29,22 +29,16 @@ def apply_bandpass(signal):
 
 class Recorder:
     def __init__(self):
-        self.phases = np.zeros((10,len(freqs)))
+        self.phase = np.zeros((10,))
 
     def callback(self, data, frames, time, status):
         n = data.shape[0]
-        window = np.reshape(sp.windows.hamming(n), (n,1))
-        signal = data[:] * window
-        amplitudes = np.abs(np.real(sf.fft(signal, axis=0)[0:n//2]))
-        phases = np.imag(sf.fft(signal, axis=0)[0:n//2])
-        self.phases = np.roll(self.phases, 0)
-        for index, freq in enumerate(freqs):
-            location = int(freq*n/fs)
-            amplitude = amplitudes[location,0]
-            if amplitude > 1:
-                print('freq {} on'.format(freq))
-            self.phases[0,index] = phases[location,0] - phases[location, 1]
-        print('{: >#016.4f}{: >#016.4f}{: >#016.4f}{: >#016.4f}'.format(self.phases[0,0], self.phases[0,1], self.phases[0,2], self.phases[0,3]))
+        xcorr = np.correlate(data[:,0], data[:,1])
+        location = max(xcorr)
+        print(location)
+        #index = int(440*n/fs)
+        #self.phase = np.roll(self.phase, 1)
+        #self.phase[0] = phases[index, 0] - phases[index, 1]
 
 pygame.init()
 screen = pygame.display.set_mode((500,500))
@@ -56,7 +50,7 @@ with stream:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-        phase = np.average(r.phases[:,0])
+        phase = np.average(r.phase)
         if phase < -20:
             phase = -20
         if phase > 20:

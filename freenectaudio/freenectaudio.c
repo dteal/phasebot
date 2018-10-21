@@ -57,10 +57,10 @@ void in_callback(freenect_device* dev, int num_samples,
     
     for(int i=0; i<num_samples; i++){
         PyObject *arglist;
-        int arg1 = mic1[0];
-        int arg2 = mic1[0];
-        int arg3 = mic3[0];
-        int arg4 = mic4[0];
+        int arg1 = mic1[i];
+        int arg2 = mic2[i];
+        int arg3 = mic3[i];
+        int arg4 = mic4[i];
         // python function should accept five integers: data and an indication of how much data is left in the cycle
         // cycles are typically 256 samples long at a 16 kHz sample rate
         arglist = Py_BuildValue("iiiii", arg1, arg2, arg3, arg4, num_samples-1-i);
