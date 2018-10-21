@@ -53,7 +53,7 @@ void in_callback(freenect_device* dev, int num_samples,
 	//fwrite(mic3, 1, num_samples*sizeof(int32_t), c->logfiles[2]);
 	//fwrite(mic4, 1, num_samples*sizeof(int32_t), c->logfiles[3]);
 	c->samples += num_samples;
-	printf("Sample received 1. Total samples recorded: %d\n", c->samples);
+	//printf("Sample received 1. Total samples recorded: %d\n", c->samples);
     
     for(int i=0; i<num_samples; i++){
         PyObject *arglist;
@@ -61,7 +61,9 @@ void in_callback(freenect_device* dev, int num_samples,
         int arg2 = mic1[0];
         int arg3 = mic3[0];
         int arg4 = mic4[0];
-        arglist = Py_BuildValue("iiii", arg1,arg2,arg3,arg4);
+        // python function should accept five integers: data and an indication of how much data is left in the cycle
+        // cycles are typically 256 samples long at a 16 kHz sample rate
+        arglist = Py_BuildValue("iiiii", arg1, arg2, arg3, arg4, num_samples-1-i);
         PyObject_CallObject(python_audio_callback, arglist);
         Py_DECREF(arglist);
     }

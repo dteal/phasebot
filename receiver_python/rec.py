@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygame
 import queue
+import freenectaudio as fs
 
 # sounddevice docs: https://python-sounddevice.readthedocs.io/en/0.3.12/usage.html#recording
 # scipy.signal docs: https://docs.scipy.org/doc/scipy/reference/signal.html
